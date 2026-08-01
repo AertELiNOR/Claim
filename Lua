@@ -1,0 +1,49 @@
+-- สร้าง ScreenGui และ TextButton ด้วยโค้ด
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleButton = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+
+-- ตั้งค่า ScreenGui (ป้องกันไม่ให้หายเวลาตัวละครตาย)
+ScreenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- ตั้งค่าปุ่มกด
+ToggleButton.Parent = ScreenGui
+ToggleButton.Size = UDim2.new(0, 160, 0, 50)
+ToggleButton.Position = UDim2.new(0.05, 0, 0.4, 0) -- ตำแหน่งเริ่มต้นบนหน้าจอ
+ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50) -- สีแดง (OFF)
+ToggleButton.Text = "Auto Farm: OFF"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 16
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.Active = true
+ToggleButton.Draggable = true -- สามารถลากปุ่มย้ายไปมาบนหน้าจอได้
+
+-- แต่งมุมปุ่มให้มน
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = ToggleButton
+
+-- ตัวแปรควบคุมการทำงาน
+local _G_ENABLED = false
+local remoteEvent = game:GetService("ReplicatedStorage"):WaitForChild("AwardTutorialMoney")
+
+-- ฟังก์ชันเมื่อคลิกปุ่ม
+ToggleButton.MouseButton1Click:Connect(function()
+    _G_ENABLED = not _G_ENABLED
+    
+    if _G_ENABLED then
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 220, 50) -- สีเขียว (ON)
+        ToggleButton.Text = "Auto Farm: ON"
+        
+        -- วนลูปทำงานไปเรื่อยๆ ใน Thread แยก
+        task.spawn(function()
+            while _G_ENABLED do
+                remoteEvent:FireServer()
+                task.wait(0.1) -- ระยะเวลาหน่วง (0.1 วินาที) ปรับให้เร็ว/ช้าลงได้ตามต้องการ
+            end
+        end)
+    else
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50) -- สีแดง (OFF)
+        ToggleButton.Text = "Auto Farm: OFF"
+    end
+end)
